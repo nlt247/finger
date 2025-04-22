@@ -1,133 +1,175 @@
 #include "fingerprint_exports.h"
-#include "fingerprint.h"
-#include <string>
+#include "communication.h"
+#include <memory>
+
+// 全局通信对象
+static std::unique_ptr<CCommunication> g_pCommunication = nullptr;
 
 /**
- * @brief 创建一个指纹识别工作器实例
+ * @brief 初始化并连接指纹设备
  * 
- * @param device_path 指纹设备的路径
- * @return FingerPrint_Worker* 指向新创建的指纹识别工作器实例的指针
+ * 若全局通信对象已存在，则先关闭连接并重置该对象。
+ * 然后使用指定的设备名称创建新的通信对象，并初始化连接。
+ * 
+ * @param devname 设备名称
+ * @return int 连接初始化结果，由 CCommunication::Run_InitConnection() 返回
  */
-FingerPrint_Worker* CreateFingerPrintWorker(const char* device_path) {
-    return new FingerPrint_Worker(device_path);
+int fp_init_connection(const char* devname) {
+    if (g_pCommunication) {
+        g_pCommunication->CloseConnection();
+        g_pCommunication.reset();
+    }
+    
+    g_pCommunication = std::make_unique<CCommunication>(devname);
+    return g_pCommunication->Run_InitConnection();
 }
 
 /**
- * @brief 销毁一个指纹识别工作器实例
+ * @brief 关闭指纹设备的连接
  * 
- * @param worker 指向要销毁的指纹识别工作器实例的指针
+ * 若全局通信对象存在，则关闭其连接并重置该对象。
  */
-void DestroyFingerPrintWorker(FingerPrint_Worker* worker) {
-    if (worker) {
-        delete worker;
+void fp_close_connection() {
+    if (g_pCommunication) {
+        g_pCommunication->CloseConnection();
+        g_pCommunication.reset();
     }
 }
 
 /**
- * @brief 初始化指纹识别工作器
+ * @brief 获取指纹图像
  * 
- * @param worker 指向指纹识别工作器实例的指针
- * @return bool 初始化成功返回 true，失败返回 false
+ * 若全局通信对象不存在，返回连接错误码。
+ * 否则，调用通信对象的方法获取指纹图像。
+ * 
+ * @return int 获取指纹图像的结果，由 CCommunication::Run_GetImage() 返回
  */
-bool FP_Worker_Init(FingerPrint_Worker* worker) {
-    if (!worker) return false;
-    return worker->init();
+int fp_get_image() {
+    if (!g_pCommunication) {
+        return ERR_CONNECTION;
+    }
+    return g_pCommunication->Run_GetImage();
 }
 
 /**
- * @brief 启动指纹识别工作器
+ * @brief 检测指纹是否存在
  * 
- * @param worker 指向指纹识别工作器实例的指针
+ * 若全局通信对象不存在，返回连接错误码。
+ * 否则，调用通信对象的方法检测指纹，并将结果存储在 detect_result 中。
+ * 
+ * @param detect_result 用于存储指纹检测结果的指针
+ * @return int 指纹检测操作的结果，由 CCommunication::Run_FingerDetect() 返回
  */
-void FP_Worker_Start(FingerPrint_Worker* worker) {
-    if (worker) worker->start();
+int fp_finger_detect(int* detect_result) {
+    if (!g_pCommunication) {
+        return ERR_CONNECTION;
+    }
+    return g_pCommunication->Run_FingerDetect(detect_result);
 }
 
 /**
- * @brief 停止指纹识别工作器
+ * @brief 存储指纹特征模板
  * 
- * @param worker 指向指纹识别工作器实例的指针
+ * 若全局通信对象不存在，返回连接错误码。
+ * 否则，调用通信对象的方法存储指纹特征模板，并将重复模板编号存储在 dup_tmpl_no 中。
+ * 
+ * @param tmpl_no 要存储的模板编号
+ * @param ram_buffer_id 内存缓冲区 ID
+ * @param dup_tmpl_no 用于存储重复模板编号的指针
+ * @return int 存储操作的结果，由 CCommunication::Run_StoreChar() 返回
  */
-void FP_Worker_Stop(FingerPrint_Worker* worker) {
-    if (worker) worker->stop();
+int fp_store_char(int tmpl_no, int ram_buffer_id, int* dup_tmpl_no) {
+    if (!g_pCommunication) {
+        return ERR_CONNECTION;
+    }
+    return g_pCommunication->Run_StoreChar(tmpl_no, ram_buffer_id, dup_tmpl_no);
 }
 
 /**
- * @brief 启动指纹检测
+ * @brief 删除指纹特征模板
  * 
- * @param worker 指向指纹识别工作器实例的指针
+ * 若全局通信对象不存在，返回连接错误码。
+ * 否则，调用通信对象的方法删除指定范围内的指纹特征模板。
+ * 
+ * @param start_tmpl_no 要删除的起始模板编号
+ * @param end_tmpl_no 要删除的结束模板编号
+ * @return int 删除操作的结果，由 CCommunication::Run_DelChar() 返回
  */
-void FP_Worker_Detect_Start(FingerPrint_Worker* worker) {
-    if (worker) worker->fp_detect_start();
+int fp_del_char(int start_tmpl_no, int end_tmpl_no) {
+    if (!g_pCommunication) {
+        return ERR_CONNECTION;
+    }
+    return g_pCommunication->Run_DelChar(start_tmpl_no, end_tmpl_no);
 }
 
 /**
- * @brief 停止指纹检测
+ * @brief 获取空闲的模板编号
  * 
- * @param worker 指向指纹识别工作器实例的指针
+ * 若全局通信对象不存在，返回连接错误码。
+ * 否则，调用通信对象的方法获取指定范围内的空闲模板编号，并将结果存储在 empty_id 中。
+ * 
+ * @param start_tmpl_no 查找的起始模板编号
+ * @param end_tmpl_no 查找的结束模板编号
+ * @param empty_id 用于存储空闲模板编号的指针
+ * @return int 获取空闲模板编号操作的结果，由 CCommunication::Run_GetEmptyID() 返回
  */
-void FP_Worker_Detect_Stop(FingerPrint_Worker* worker) {
-    if (worker) worker->fp_detect_stop();
+int fp_get_empty_id(int start_tmpl_no, int end_tmpl_no, int* empty_id) {
+    if (!g_pCommunication) {
+        return ERR_CONNECTION;
+    }
+    return g_pCommunication->Run_GetEmptyID(start_tmpl_no, end_tmpl_no, empty_id);
 }
 
 /**
- * @brief 启动指纹录入
+ * @brief 生成指纹特征
  * 
- * @param worker 指向指纹识别工作器实例的指针
+ * 若全局通信对象不存在，返回连接错误码。
+ * 否则，调用通信对象的方法在指定内存缓冲区中生成指纹特征。
+ * 
+ * @param ram_buffer_id 内存缓冲区 ID
+ * @return int 生成指纹特征操作的结果，由 CCommunication::Run_Generate() 返回
  */
-void FP_Worker_Enroll_Start(FingerPrint_Worker* worker) {
-    if (worker) worker->fp_enroll_start();
+int fp_generate(int ram_buffer_id) {
+    if (!g_pCommunication) {
+        return ERR_CONNECTION;
+    }
+    return g_pCommunication->Run_Generate(ram_buffer_id);
 }
 
 /**
- * @brief 保存指纹模板
+ * @brief 合并指纹特征
  * 
- * @param worker 指向指纹识别工作器实例的指针
- * @param finger_id 要保存的指纹的 ID
+ * 若全局通信对象不存在，返回连接错误码。
+ * 否则，调用通信对象的方法在指定内存缓冲区中合并指定数量的指纹特征。
+ * 
+ * @param ram_buffer_id 内存缓冲区 ID
+ * @param merge_count 要合并的指纹特征数量
+ * @return int 合并指纹特征操作的结果，由 CCommunication::Run_Merge() 返回
  */
-void FP_Worker_Save(FingerPrint_Worker* worker, int finger_id) {
-    if (worker) worker->fp_save(finger_id);
+int fp_merge(int ram_buffer_id, int merge_count) {
+    if (!g_pCommunication) {
+        return ERR_CONNECTION;
+    }
+    return g_pCommunication->Run_Merge(ram_buffer_id, merge_count);
 }
 
 /**
- * @brief 删除指定 ID 的指纹模板
+ * @brief 搜索指纹特征模板
  * 
- * @param worker 指向指纹识别工作器实例的指针
- * @param finger_id 要删除的指纹的 ID
- */
-void FP_Worker_Delete(FingerPrint_Worker* worker, int finger_id) {
-    if (worker) worker->fp_delete(finger_id);
-}
-
-/**
- * @brief 检查指纹识别工作器是否在线
+ * 若全局通信对象不存在，返回连接错误码。
+ * 否则，调用通信对象的方法在指定范围内搜索指纹特征模板，并将匹配的模板编号和学习结果存储在 tmpl_no 和 learn_result 中。
  * 
- * @param worker 指向指纹识别工作器实例的指针
- * @return bool 在线返回 true，离线返回 false
+ * @param ram_buffer_id 内存缓冲区 ID
+ * @param start_id 搜索的起始模板编号
+ * @param search_count 要搜索的模板数量
+ * @param tmpl_no 用于存储匹配的模板编号的指针
+ * @param learn_result 用于存储学习结果的指针
+ * @return int 搜索操作的结果，由 CCommunication::Run_Search() 返回
  */
-bool FP_Worker_Online(FingerPrint_Worker* worker) {
-    if (!worker) return false;
-    return worker->online();
-}
-
-/**
- * @brief 获取可用的指纹 ID
- * 
- * @param worker 指向指纹识别工作器实例的指针
- * @return int 可用的指纹 ID，如果没有可用 ID 或工作器指针为空则返回 -1
- */
-int FP_Worker_Avail_ID(FingerPrint_Worker* worker) {
-    if (!worker) return -1;
-    return worker->avail_id();
-}
-
-/**
- * @brief 检查是否有新的指纹模板可用
- * 
- * @param worker 指向指纹识别工作器实例的指针
- * @return bool 有新模板可用返回 true，否则返回 false
- */
-bool FP_Worker_New_Template_Avail(FingerPrint_Worker* worker) {
-    if (!worker) return false;
-    return worker->new_template_avail();
+int fp_search(int ram_buffer_id, int start_id, int search_count, 
+             int* tmpl_no, int* learn_result) {
+    if (!g_pCommunication) {
+        return ERR_CONNECTION;
+    }
+    return g_pCommunication->Run_Search(ram_buffer_id, start_id, search_count, tmpl_no, learn_result);
 }

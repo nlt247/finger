@@ -59,6 +59,13 @@ set(HEADERS
 # 创建动态链接库
 add_library(fingerprint SHARED ${SOURCES} ${HEADERS})
 
+# 设置库的输出名称
+set_target_properties(fingerprint PROPERTIES
+    OUTPUT_NAME "fingerprintlib"
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+)
+
 # 设置包含目录
 target_include_directories(fingerprint PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}

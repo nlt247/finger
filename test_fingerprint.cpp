@@ -1,114 +1,104 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <thread>
-#include <chrono>
+#include <iostream>
 #include "fingerprint_api.h"
 
-void fingerprint_callback(int status, int template_id, void* user_data) {
-    printf("Callback: status=%d, template_id=%d\n", status, template_id);
+int main(int argc, char* argv[]) {
+    const char* device = "/dev/ttyUSB0";  // 默认设备
     
-    if (status == FP_STATUS_FINGER_DETECTED) {
-        printf("检测到已注册的指纹，ID: %d\n", template_id);
-    }
-    else if (status == FP_ENROLL_PLACE_FINGER) {
-        printf("请放置指纹 (步骤 %d/3)\n", template_id + 1);
-    }
-    else if (status == FP_ENROLL_REMOVE_FINGER) {
-        printf("请移开指纹 (步骤 %d/3)\n", template_id + 1);
-    }
-    else if (status == FP_ENROLL_MERGE) {
-        printf("指纹模板创建成功，可以保存\n");
-    }
-    else if (status == FP_ENROLL_DUPLICATE) {
-        printf("指纹已存在，请使用其他手指\n");
-    }
-}
-
-int main(int argc, char** argv) {
-    const char* device_path = "/dev/sg0"; // 默认设备路径
-    
-    // 如果提供了命令行参数，使用它作为设备路径
     if (argc > 1) {
-        device_path = argv[1];
+        device = argv[1];  // 使用命令行参数指定设备
     }
     
-    printf("初始化指纹库...\n");
-    printf("设备路径: %s\n", device_path);
+    std::cout << "正在初始化指纹设备: " << device << std::endl;
     
-    int ret = fp_init(device_path);
+    int ret = fp_init_connection(device);
     if (ret != FP_SUCCESS) {
-        printf("初始化指纹库失败: %d\n", ret);
+        std::cerr << "初始化失败，错误码: " << ret << std::endl;
         return 1;
     }
     
-    printf("指纹库初始化成功\n");
-    printf("当前可用ID: %d\n", fp_get_available_id());
+    std::cout << "初始化成功!" << std::endl;
     
-    char choice;
-    printf("选择操作模式:\n");
-    printf("1. 指纹检测模式\n");
-    printf("2. 指纹注册模式\n");
-    printf("3. 删除指纹模板\n");
-    printf("请输入选择 (1-3): ");
-    scanf(" %c", &choice);
+    // 测试检测手指
+    int detect_result = 0;
+    std::cout << "请将手指放在传感器上..." << std::endl;
+    ret = fp_finger_detect(&detect_result);
     
-    switch (choice) {
-        case '1':
-            printf("启动指纹检测...\n");
-            fp_start_detection(fingerprint_callback, NULL);
+    if (ret != FP_SUCCESS) {
+        std::cerr << "检测失败，错误码: " << ret << std::endl;
+    } else {
+        if (detect_result) {
+            std::cout << "检测到手指!" << std::endl;
             
-            printf("检测模式将运行30秒，请在此期间尝试放置已注册的指纹...\n");
-            std::this_thread::sleep_for(std::chrono::seconds(30));
+            // 获取图像
+            std::cout << "正在获取指纹图像..." << std::endl;
+            ret = fp_get_image();
             
-            printf("停止指纹检测...\n");
-            fp_stop_detection();
-            break;
-            
-        case '2':
-            printf("启动指纹注册...\n");
-            fp_start_enrollment(fingerprint_callback, NULL);
-            
-            printf("请按照提示完成指纹注册过程...\n");
-            std::this_thread::sleep_for(std::chrono::seconds(30));
-            
-            // 询问是否保存模板
-            printf("是否保存指纹模板? (y/n): ");
-            scanf(" %c", &choice);
-            if (choice == 'y' || choice == 'Y') {
-                int id = fp_get_available_id();
-                if (id > 0) {
-                    printf("保存指纹模板，ID: %d\n", id);
-                    fp_save_template(id);
-                } else {
-                    printf("无法获取可用ID，请尝试删除一些模板后再试\n");
-                }
-            }
-            break;
-            
-        case '3':
-            {
-                int id;
-                printf("请输入要删除的指纹ID: ");
-                scanf("%d", &id);
+            if (ret != FP_SUCCESS) {
+                std::cerr << "获取图像失败，错误码: " << ret << std::endl;
+            } else {
+                std::cout << "图像获取成功!" << std::endl;
                 
-                printf("删除指纹ID %d...\n", id);
-                ret = fp_delete_template(id);
-                if (ret == FP_SUCCESS) {
-                    printf("删除成功\n");
+                // 生成特征
+                std::cout << "正在生成特征..." << std::endl;
+                ret = fp_generate(FP_BUFFER_1);
+                
+                if (ret != FP_SUCCESS) {
+                    std::cerr << "生成特征失败，错误码: " << ret << std::endl;
                 } else {
-                    printf("删除失败: %d\n", ret);
+                    std::cout << "特征生成成功!" << std::endl;
+                    
+                    // 搜索指纹
+                    int tmpl_no = 0;
+                    int learn_result = 0;
+                    
+                    std::cout << "正在搜索指纹..." << std::endl;
+                    ret = fp_search(FP_BUFFER_1, 0, 1000, &tmpl_no, &learn_result);
+                    
+                    if (ret != FP_SUCCESS) {
+                        std::cerr << "搜索失败，错误码: " << ret << std::endl;
+                    } else {
+                        if (tmpl_no > 0) {
+                            std::cout << "找到匹配的指纹，ID: " << tmpl_no << std::endl;
+                        } else {
+                            std::cout << "未找到匹配的指纹" << std::endl;
+                            
+                            // 存储新指纹
+                            std::cout << "正在查找空ID..." << std::endl;
+                            int empty_id = 0;
+                            ret = fp_get_empty_id(1, 1000, &empty_id);
+                            
+                            if (ret != FP_SUCCESS) {
+                                std::cerr << "查找空ID失败，错误码: " << ret << std::endl;
+                            } else {
+                                std::cout << "找到空ID: " << empty_id << std::endl;
+                                
+                                // 存储指纹
+                                int dup_tmpl_no = 0;
+                                std::cout << "正在存储指纹..." << std::endl;
+                                ret = fp_store_char(empty_id, FP_BUFFER_1, &dup_tmpl_no);
+                                
+                                if (ret != FP_SUCCESS) {
+                                    std::cerr << "存储指纹失败，错误码: " << ret << std::endl;
+                                } else {
+                                    if (dup_tmpl_no > 0) {
+                                        std::cout << "发现重复指纹，ID: " << dup_tmpl_no << std::endl;
+                                    } else {
+                                        std::cout << "指纹成功存储为ID: " << empty_id << std::endl;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
-            break;
-            
-        default:
-            printf("无效选择\n");
-            break;
+        } else {
+            std::cout << "未检测到手指" << std::endl;
+        }
     }
     
-    printf("清理资源...\n");
-    fp_cleanup();
+    // 关闭连接
+    fp_close_connection();
+    std::cout << "连接已关闭" << std::endl;
     
-    printf("测试完成\n");
     return 0;
 }
