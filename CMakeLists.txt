@@ -13,13 +13,14 @@ add_definitions(-DBUILDING_DLL)
 if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fvisibility=hidden")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 endif()
 
 # 源代码文件
 set(SOURCES
     fingerprint_api.cpp
     fingerprint.cpp
+    fingerprint_exports.cpp
     communication.cpp
     command.cpp
     device.cpp
@@ -35,6 +36,7 @@ set(SOURCES
 # 头文件
 set(HEADERS
     fingerprint_api.h
+    fingerprint_exports.h
     thread.h
     fingerprint.h
     communication.h
@@ -79,7 +81,7 @@ install(TARGETS fingerprint
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION bin
 )
-install(FILES fingerprint_api.h DESTINATION include)
+install(FILES fingerprint_api.h fingerprint_exports.h DESTINATION include)
 
 # 添加测试程序
 add_executable(test_fingerprint test_fingerprint.cpp)

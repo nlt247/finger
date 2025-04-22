@@ -5,8 +5,9 @@
 #include <functional>
 #include "thread.h"
 #include "communication.h"
+#include "fingerprint_api.h"
 
-class FingerPrint_Worker {
+class FINGERPRINT_API FingerPrint_Worker {
 public:
     enum FP_ENROLL_PROCEDURE {
         FP_NONE,
