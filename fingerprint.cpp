@@ -208,3 +208,63 @@ bool FingerPrint_Worker::init()
 }
 
 // [其余底层方法保持不变]
+void CCommunication::CloseConnection()
+{
+    USBSCSIDeInit();
+}
+
+bool FingerPrint_Worker::duplicated()
+{
+    // 简单实现，实际业务逻辑需要您填充
+    return false;
+}
+
+int FingerPrint_Worker::remove(int id)
+{
+    return m_comm.Run_DelChar(id, id);
+}
+
+int FingerPrint_Worker::store(int id)
+{
+    int dupId;
+    return m_comm.Run_StoreChar(id, 0, &dupId);
+}
+
+int FingerPrint_Worker::generate(int step)
+{
+    return m_comm.Run_Generate(step);
+}
+
+void FingerPrint_Worker::update_avail_id()
+{
+    int emptyId;
+    if (m_comm.Run_GetEmptyID(1, 200, &emptyId) == ERR_SUCCESS) {
+        m_avail_id = emptyId;
+    } else {
+        m_avail_id = 0;
+    }
+}
+
+int FingerPrint_Worker::capture()
+{
+    return m_comm.Run_GetImage();
+}
+
+bool FingerPrint_Worker::detect_finger()
+{
+    int result;
+    int ret = m_comm.Run_FingerDetect(&result);
+    return (ret == ERR_SUCCESS && result == 1);
+}
+
+bool FingerPrint_Worker::search(int* id)
+{
+    int learnResult;
+    int ret = m_comm.Run_Search(0, 1, 200, id, &learnResult);
+    return (ret == ERR_SUCCESS);
+}
+
+int FingerPrint_Worker::merge(int step)
+{
+    return m_comm.Run_Merge(0, step);
+}
