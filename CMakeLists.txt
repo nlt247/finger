@@ -16,44 +16,25 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 endif()
 
-# 源代码文件
+# 源代码文件 - 只包含必要的文件
 set(SOURCES
     fingerprint_api.cpp
-    fingerprint.cpp
     fingerprint_exports.cpp
     communication.cpp
     command.cpp
     device.cpp
-    crypt/crypt_user.cpp
-    crypt/base64.cpp
-    crypt/md5.cpp
-    crypt/rsa.cpp
-    crypt/tea/xtea.cpp
-    crypt/utils/bigint.cpp
     usbcommand.cpp
 )
 
-# 头文件
+# 头文件 - 只包含必要的头文件
 set(HEADERS
     fingerprint_api.h
     fingerprint_exports.h
-    thread.h
-    fingerprint.h
     communication.h
     command.h
     define.h
     device.h
-    crypt/crypt_user.h
-    crypt/base64.h
-    crypt/md5.h
-    crypt/rsa.h
-    crypt/tea/xtea.h
-    crypt/utils/bigint.h
-    crypt/utils/types.h
-    crypt/utils/utility.h
-    crypt/utils/random.h
     usbcommand.h
-    spti.h
 )
 
 # 创建动态链接库
@@ -69,9 +50,6 @@ set_target_properties(fingerprint PROPERTIES
 # 设置包含目录
 target_include_directories(fingerprint PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/crypt
-    ${CMAKE_CURRENT_SOURCE_DIR}/crypt/utils
-    ${CMAKE_CURRENT_SOURCE_DIR}/crypt/tea
 )
 
 # 链接必要的系统库

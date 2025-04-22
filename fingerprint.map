@@ -1,7 +1,6 @@
 FINGERPRINT_1.0 {
     global:
-        fp_*;                    # 导出所有fp_前缀的函数
-        FingerPrint_Worker::*;   # 添加FingerPrint_Worker类的所有函数
+        fp_*;                    # 只导出所有fp_前缀的函数
     local:
         *;                       # 隐藏所有其他符号
 };
