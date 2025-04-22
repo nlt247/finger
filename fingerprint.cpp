@@ -210,11 +210,6 @@ bool FingerPrint_Worker::init()
 }
 
 // [其余底层方法保持不变]
-void CCommunication::CloseConnection()
-{
-    USBSCSIDeInit();
-}
-
 bool FingerPrint_Worker::duplicated()
 {
     // 简单实现，实际业务逻辑需要您填充
