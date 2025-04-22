@@ -164,7 +164,7 @@ bool USB_ReceiveDataAck(HANDLE hHandle, WORD p_wCMD)
 		nLen = 8;
 		if ( !USBSCSIRead(hHandle, btCDB, sizeof(btCDB), g_Packet, &nLen, w_dwTimeOut) )
 			return false;
-		QThread::msleep(COMM_SLEEP_TIME);
+		std::this_thread::sleep_for(std::chrono::milliseconds(COMM_SLEEP_TIME));
 	} while ( !memcmp(g_Packet, w_WaitPacket, 8) );
 
 	nLen = g_pRcmPacket->m_wDataLen + 2;
