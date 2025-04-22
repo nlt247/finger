@@ -35,6 +35,16 @@ extern "C"{
 
 HANDLE hUsbHandle = INVALID_HANDLE_VALUE;
 
+#ifdef __linux__
+BOOL USBSCSIInit(QString dev_name)
+{
+    sg_fd = open(dev_name.toLatin1(), O_RDWR | O_NONBLOCK);
+    if (sg_fd < 0) {
+        return FALSE;
+    }
+    return TRUE;
+}
+#else
 BOOL USBSCSIInit(QString dev_name)
 {
     Q_UNUSED(dev_name)
@@ -48,7 +58,7 @@ BOOL USBSCSIInit(QString dev_name)
     
     for ( Driver='C'; Driver<='Z'; Driver++ )
     {
-//        strPath = strPath.Format( _T("%c:"),Driver );
+        // strPath = strPath.Format( _T("%c:"),Driver );
         strPath[0] = Driver;
         int type = GetDriveType( strPath.data() );
         if( type==DRIVE_REMOVABLE || type==DRIVE_CDROM )
@@ -86,6 +96,7 @@ BOOL USBSCSIInit(QString dev_name)
     hUsbHandle = INVALID_HANDLE_VALUE;
     return FALSE;
 }
+#endif
 
 void USBSCSIDeInit(void)
 {
