@@ -2,6 +2,7 @@
 #include <thread>
 #include <chrono>
 
+#include "device.h"
 #include "define.h"
 #include "communication.h"
 #include "fingerprint.h"
@@ -133,6 +134,7 @@ void FingerPrint_Worker::fp_task()
             break;
         }
         m_task.curr_proc = FP_PLACE_FINGER;
+        /* FALLTHROUGH */ 
     case FP_PLACE_FINGER:
         if (!detect_finger()) {
             if (m_messageCallback) {
