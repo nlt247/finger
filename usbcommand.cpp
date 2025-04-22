@@ -14,8 +14,8 @@
 /***************************************************************************/
 bool OpenUSB( HANDLE* pHandle, int p_nDeviceID )
 {
-    Q_UNUSED(pHandle)
-    Q_UNUSED(p_nDeviceID)
+    UNUSED(pHandle)
+    UNUSED(p_nDeviceID)
 /*	BOOL	w_bRet;
 	HANDLE  hUDisk= INVALID_HANDLE_VALUE;
     CHAR	strDriver[25]; 
@@ -74,10 +74,11 @@ bool CloseUsb( HANDLE *pHandle )
 }
 /***************************************************************************/
 /***************************************************************************/
+#define UNUSED(x) (void)(x)
 bool USB_SendPacket( HANDLE hHandle, WORD p_wCMD, BYTE p_bySrcDeviceID, BYTE p_byDstDeviceID )
 {
-    Q_UNUSED(p_bySrcDeviceID)
-    Q_UNUSED(p_byDstDeviceID)
+    UNUSED(p_bySrcDeviceID)
+    UNUSED(p_byDstDeviceID)
 //	DWORD	w_nSendCnt = 0;
 //	LONG	w_nResult = 0;
 	BYTE	btCDB[8] = {0};
@@ -196,8 +197,8 @@ bool USB_ReceiveDataAck(HANDLE hHandle, WORD p_wCMD)
 /***************************************************************************/
 bool USB_SendDataPacket( HANDLE hHandle, WORD p_wCMD, BYTE p_bySrcDeviceID, BYTE p_byDstDeviceID )
 {
-    Q_UNUSED(p_bySrcDeviceID)
-    Q_UNUSED(p_byDstDeviceID)
+    UNUSED(p_bySrcDeviceID)
+    UNUSED(p_byDstDeviceID)
 
 	BYTE	btCDB[8] = {0};
 	WORD	w_wLen = (WORD)g_dwPacketSize;
@@ -218,8 +219,8 @@ bool USB_SendDataPacket( HANDLE hHandle, WORD p_wCMD, BYTE p_bySrcDeviceID, BYTE
 /***************************************************************************/
 bool USB_ReceiveDataPacket(HANDLE hHandle, WORD	p_wCMD, BYTE p_bySrcDeviceID, BYTE p_byDstDeviceID)
 {
-    Q_UNUSED(p_bySrcDeviceID)
-    Q_UNUSED(p_byDstDeviceID)
+    UNUSED(p_bySrcDeviceID)
+    UNUSED(p_byDstDeviceID)
 
     return USB_ReceiveDataAck(hHandle, p_wCMD);
 }
