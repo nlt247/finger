@@ -45,11 +45,6 @@ public:
     int avail_id() const { return m_avail_id; }
     bool new_template_avail() const { return m_new_template; }
 
-private:
-    // 私有任务处理方法
-    void fp_task();
-    void fp_check();
-
     // 指纹操作方法
     int capture();
     int generate(int step);
@@ -61,10 +56,15 @@ private:
     int store(int id);
     int remove(int id);
     int remove_all();
-
+    
     // 初始化和状态更新
     bool init();
     void update_avail_id();
+
+private:
+    // 私有任务处理方法
+    void fp_task();
+    void fp_check();
 
     // 内部任务结构
     struct Task {
