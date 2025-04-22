@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(fingerprint_lib VERSION 1.0 LANGUAGES CXX)
 
 # 设置C++标准
@@ -9,16 +9,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_definitions(-DBUILDING_DLL)
 
-# 查找Qt包
-find_package(Qt5 COMPONENTS Core REQUIRED)
+# 使用较高的警告级别
+if(MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fvisibility=hidden")
+endif()
 
 # 源代码文件
 set(SOURCES
     fingerprint_api.cpp
+    fingerprint.cpp
     communication.cpp
     command.cpp
     device.cpp
-    fingerprint.cpp
     crypt/crypt_user.cpp
     crypt/base64.cpp
     crypt/md5.cpp
@@ -31,11 +35,12 @@ set(SOURCES
 # 头文件
 set(HEADERS
     fingerprint_api.h
+    thread.h
+    fingerprint.h
     communication.h
     command.h
     define.h
     device.h
-    fingerprint.h
     crypt/crypt_user.h
     crypt/base64.h
     crypt/md5.h
@@ -60,8 +65,14 @@ target_include_directories(fingerprint PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/crypt/tea
 )
 
-# 链接Qt库
-target_link_libraries(fingerprint Qt5::Core)
+# 链接必要的系统库
+if(UNIX AND NOT APPLE)
+    target_link_libraries(fingerprint pthread)
+    # 添加版本脚本
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/fingerprint.map")
+elseif(WIN32)
+    target_link_libraries(fingerprint setupapi)
+endif()
 
 # 安装规则
 install(TARGETS fingerprint
@@ -69,3 +80,7 @@ install(TARGETS fingerprint
     RUNTIME DESTINATION bin
 )
 install(FILES fingerprint_api.h DESTINATION include)
+
+# 添加测试程序
+add_executable(test_fingerprint test_fingerprint.cpp)
+target_link_libraries(test_fingerprint fingerprint)

@@ -40,6 +40,18 @@ typedef enum {
     FP_STATUS_ERROR = 4
 } FP_STATUS;
 
+// 注册过程中的阶段
+typedef enum {
+    FP_ENROLL_NONE = 0,
+    FP_ENROLL_PLACE_FINGER = 1,
+    FP_ENROLL_REMOVE_FINGER = 2,
+    FP_ENROLL_CAPTURE = 3,
+    FP_ENROLL_GENERATE = 4,
+    FP_ENROLL_MERGE = 5,
+    FP_ENROLL_COMPLETE = 6,
+    FP_ENROLL_DUPLICATE = 7
+} FP_ENROLL_STAGE;
+
 // 指纹操作回调函数类型
 typedef void (*fp_callback)(int status, int template_id, void* user_data);
 
