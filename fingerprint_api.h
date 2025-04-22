@@ -82,6 +82,8 @@ FINGERPRINT_API int fp_delete_template(int template_id);
 // 获取当前可用的ID
 FINGERPRINT_API int fp_get_available_id();
 
+FINGERPRINT_API int test_add(int a, int b);
+
 #ifdef __cplusplus
 }
 #endif

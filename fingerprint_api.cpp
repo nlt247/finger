@@ -209,3 +209,7 @@ FINGERPRINT_API int fp_get_available_id() {
     // 获取可用的模板ID
     return worker->avail_id();
 }
+
+FINGERPRINT_API int test_add(int a, int b) {
+    return a + b;
+}
