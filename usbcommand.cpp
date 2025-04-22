@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-
-#include <QThread>
-
+#include <chrono>
+#include <thread>
 #include "define.h"
 #include "command.h"
 #include "usbcommand.h"
@@ -130,7 +129,7 @@ bool USB_ReceiveAck(HANDLE hHandle, WORD p_wCMD)
 		if( !USBSCSIRead( hHandle, btCDB, sizeof(btCDB), g_Packet, &nLen, w_dwTimeOut ) )
 			return false;
 
-		QThread::msleep(COMM_SLEEP_TIME);
+		std::this_thread::sleep_for(std::chrono::milliseconds(COMM_SLEEP_TIME));
 		
 		c++;
 	
