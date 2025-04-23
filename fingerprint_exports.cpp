@@ -13,20 +13,13 @@ namespace std {
 
 // 全局通信对象
 std::unique_ptr<CCommunication> m_comm;
-CCommunication comm;
 // 初始化和连接管理
-int fp_init_connection(const char* dev_name) {
+int fp_init_connection(const std::string& dev_name) {
     if (!m_comm){
         m_comm = std::make_unique<CCommunication>(dev_name);
     }
 
 	if (m_comm->Run_InitConnection() != CONNECTION_SUCCESS)
-		return false;
-	return true;
-}
-
-int fp_open_connection() {
-	if (comm->Run_OpenConnection()!= CONNECTION_SUCCESS)
 		return false;
 	return true;
 }
@@ -41,12 +34,10 @@ int fp_get_image() {
 }
 
 int fp_finger_detect() {
-    int ret_code;
-
-	if (m_comm->Run_FingerDetect(&ret_code) != ERR_SUCCESS)
-		return false;
-
-	return ret_code;
+    int result;
+    // 运行手指检测函数，根据返回值判断手指是否存在
+    int ret = m_comm->Run_FingerDetect(&result);
+    return (ret == ERR_SUCCESS && result == 1);
 }
 
 int fp_store_char(int id) {
