@@ -264,8 +264,6 @@ FINGERPRINT_API int test_add(int a, int b) {
  */
  FINGERPRINT_API bool fp_detect_finger()
  {
-     if (!worker || !worker->online()) return false;
- 
      return worker->detect_finger();
  }
  
