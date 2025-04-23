@@ -3,10 +3,13 @@
 #include <memory>
 
 // 全局通信对象
-CCommunication m_comm;
+std::unique_ptr<CCommunication> m_comm;
 
 // 初始化和连接管理
-int fp_init_connection() {
+int fp_init_connection(char* dev_name) {
+    if (!m_comm)
+        m_comm = std::make_unique<CCommunication>(dev_name);
+
 	if (m_comm.Run_InitConnection() != CONNECTION_SUCCESS)
 		return false;
 	return true;
