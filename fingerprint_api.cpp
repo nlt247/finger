@@ -206,9 +206,10 @@ FINGERPRINT_API int test_add(int a, int b) {
  */
  FINGERPRINT_API int fp_remove_template(int id)
  {
-    if (!worker || !worker->online()) return FP_ERROR_DEVICE_NOT_FOUND;
-    
-     return worker->Run_DelChar(id, id);
+     if (!worker || !worker->online()) return FP_ERROR_DEVICE_NOT_FOUND;
+     
+     worker->remove(id);
+     return FP_SUCCESS;
  }
  
  /**
@@ -216,90 +217,78 @@ FINGERPRINT_API int test_add(int a, int b) {
   * @param id 要存储的指纹 ID
   * @return 存储操作的返回值
   */
-FINGERPRINT_API int fp_store(int id)
-{
-    if (!worker || !worker->online()) return FP_ERROR_DEVICE_NOT_FOUND;
-
-    int dupId;
-    return worker->Run_StoreChar(id, 0, &dupId);
-}
+ FINGERPRINT_API int fp_store(int id)
+ {
+     if (!worker || !worker->online()) return FP_ERROR_DEVICE_NOT_FOUND;
  
-/**
-* @brief 生成指纹模板
-* @param step 生成步骤
-* @return 生成操作的返回值
-*/
-FINGERPRINT_API int fp_generate(int step)
-{
-    if (!worker || !worker->online()) return FP_ERROR_DEVICE_NOT_FOUND;
-
-    return worker->Run_Generate(step);
-}
+     worker->store(id);
+     return FP_SUCCESS;
+ }
  
-/**
-* @brief 更新可用的指纹 ID
-*/
-FINGERPRINT_API void fp_update_avail_id()
-{
-    if (!worker || !worker->online()) return;
-    
-    int emptyId;
-    // 获取可用的指纹 ID
-    if (worker->Run_GetEmptyID(1, 200, &emptyId) == ERR_SUCCESS) {
-        worker->set_avail_id(emptyId);  // 假设有一个setter方法
-    } else {
-        // 获取失败
-        worker->set_avail_id(0);
-    }
-}
+ /**
+ * @brief 生成指纹模板
+ * @param step 生成步骤
+ * @return 生成操作的返回值
+ */
+ FINGERPRINT_API int fp_generate(int step)
+ {
+     if (!worker || !worker->online()) return FP_ERROR_DEVICE_NOT_FOUND;
  
-/**
-* @brief 捕获指纹图像
-* @return 捕获操作的返回值
-*/
-FINGERPRINT_API int fp_capture()
-{
-    if (!worker || !worker->online()) return FP_ERROR_DEVICE_NOT_FOUND;
-
-    return worker->Run_GetImage();
-}
+     return worker->generate(step);
+ }
  
-/**
-* @brief 检测手指是否存在
-* @return 存在返回 true，不存在返回 false
-*/
-FINGERPRINT_API bool fp_detect_finger()
-{
-    if (!worker || !worker->online()) return false;
-
-    int result;
-    // 运行手指检测函数，根据返回值判断手指是否存在
-    int ret = worker->Run_FingerDetect(&result);
-    return (ret == ERR_SUCCESS && result == 1);
-}
+ /**
+ * @brief 更新可用的指纹 ID
+ */
+ FINGERPRINT_API void fp_update_avail_id()
+ {
+     if (!worker || !worker->online()) return;
+     
+     worker->update_avail_id();
+ }
  
-/**
-* @brief 搜索匹配的指纹 ID
-* @param id 用于存储匹配到的指纹 ID
-* @return 搜索成功返回 true，失败返回 false
-*/
-FINGERPRINT_API bool fp_search(int* id)
-{
-    if (!worker || !worker->online()) return FP_ERROR_DEVICE_NOT_FOUND;
-
-    int learnResult;
-    // 运行搜索函数，根据返回值判断是否搜索成功
-    int ret = worker->Run_Search(0, 1, 200, id, &learnResult);
-    return (ret == ERR_SUCCESS);
-}
+ /**
+ * @brief 捕获指纹图像
+ * @return 捕获操作的返回值
+ */
+ FINGERPRINT_API int fp_capture()
+ {
+     if (!worker || !worker->online()) return FP_ERROR_DEVICE_NOT_FOUND;
  
-/**
-* @brief 合并指纹模板
-* @param step 合并步骤
-* @return 合并操作的返回值
-*/
-FINGERPRINT_API int fp_merge(int step)
-{
-    if (!worker || !worker->online()) return FP_ERROR_DEVICE_NOT_FOUND;
-    return worker->Run_Merge(0, step);
-}
+     return worker->capture();
+ }
+ 
+ /**
+ * @brief 检测手指是否存在
+ * @return 存在返回 true，不存在返回 false
+ */
+ FINGERPRINT_API bool fp_detect_finger()
+ {
+     if (!worker || !worker->online()) return false;
+ 
+     return worker->detect_finger();
+ }
+ 
+ /**
+ * @brief 搜索匹配的指纹 ID
+ * @param id 用于存储匹配到的指纹 ID
+ * @return 搜索成功返回 true，失败返回 false
+ */
+ FINGERPRINT_API bool fp_search(int* id)
+ {
+     if (!worker || !worker->online()) return false; // 修正返回类型
+ 
+     return worker->search(id);
+ }
+ 
+ /**
+ * @brief 合并指纹模板
+ * @param step 合并步骤
+ * @return 合并操作的返回值
+ */
+ FINGERPRINT_API int fp_merge(int step)
+ {
+     if (!worker || !worker->online()) return FP_ERROR_DEVICE_NOT_FOUND;
+     
+     return worker->merge(step);
+ }
