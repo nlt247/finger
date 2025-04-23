@@ -15,7 +15,7 @@ namespace std {
 std::unique_ptr<CCommunication> m_comm;
 
 // 初始化和连接管理
-int fp_init_connection(char* dev_name) {
+int fp_init_connection(const char* dev_name) {
     if (!m_comm){
         m_comm = std::make_unique<CCommunication>(dev_name);
     }
