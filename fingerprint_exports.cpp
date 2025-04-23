@@ -1,5 +1,6 @@
 #include "fingerprint_exports.h"
 #include "communication.h"
+#include <string>
 #include <memory>
 
 #if __cplusplus <= 201103L
