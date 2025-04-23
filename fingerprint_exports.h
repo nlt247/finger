@@ -1,6 +1,8 @@
 #ifndef __FP_EXPORTS_H__
 #define __FP_EXPORTS_H__
 
+#include <string>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
