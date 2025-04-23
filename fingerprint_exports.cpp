@@ -89,6 +89,6 @@ int fp_merge(int ram_buffer_id) {
 int fp_search(int *id) {
     int learnResult;
     // 运行搜索函数，根据返回值判断是否搜索成功
-    int ret = m_comm.Run_Search(0, 1, 200, id, &learnResult);
+    int ret = m_comm->Run_Search(0, 1, 200, id, &learnResult);
     return (ret == ERR_SUCCESS);
 }
