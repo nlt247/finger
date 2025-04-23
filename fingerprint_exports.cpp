@@ -13,7 +13,7 @@ namespace std {
 
 // 全局通信对象
 std::unique_ptr<CCommunication> m_comm;
-
+CCommunication comm;
 // 初始化和连接管理
 int fp_init_connection(const char* dev_name) {
     if (!m_comm){
@@ -21,6 +21,12 @@ int fp_init_connection(const char* dev_name) {
     }
 
 	if (m_comm->Run_InitConnection() != CONNECTION_SUCCESS)
+		return false;
+	return true;
+}
+
+int fp_open_connection() {
+	if (comm->Run_OpenConnection()!= CONNECTION_SUCCESS)
 		return false;
 	return true;
 }

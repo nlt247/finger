@@ -17,6 +17,7 @@ extern "C" {
 
 // 初始化和连接管理
 FPAPI int fp_init_connection(const char* dev_name);
+FPAPI int fp_open_connection();
 FPAPI void fp_close_connection();
 
 // 指纹操作
