@@ -84,6 +84,22 @@ FINGERPRINT_API int fp_get_available_id();
 
 FINGERPRINT_API int test_add(int a, int b);
 
+FINGERPRINT_API int remove(int id);
+
+FINGERPRINT_API int store(int id);
+
+FINGERPRINT_API int generate(int step);
+
+FINGERPRINT_API void update_avail_id();
+
+FINGERPRINT_API int capture();
+
+FINGERPRINT_API bool detect_finger();
+
+FINGERPRINT_API bool search(int* id);
+
+FINGERPRINT_API int merge(int step);
+
 #ifdef __cplusplus
 }
 #endif
