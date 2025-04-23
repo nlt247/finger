@@ -49,15 +49,15 @@ int main(int argc, char* argv[]) {
     } else {
         std::cout << "未找到匹配指纹，准备存储..." << std::endl;
 
-        ret = fp_get_empty_id(1);
-        if (ret != true) {
+        ret = fp_get_empty_id();
+        if (ret <= 0) {
             std::cerr << "查找空位失败。" << std::endl;
             fp_close_connection();
             return 1;
         }
 
         int empty_id = 0;
-        if (fp_get_empty_id(1)) {
+        if (fp_get_empty_id() > 0) {
             std::cout << "找到空ID，正在存储指纹..." << std::endl;
             ret = fp_store_char(empty_id);
             if (ret != true) {
