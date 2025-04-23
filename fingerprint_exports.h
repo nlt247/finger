@@ -25,7 +25,7 @@ FPAPI int fp_finger_detect();
 FPAPI int fp_store_char(int id);
 FPAPI int fp_del_char(int id);
 FPAPI int update_avail_id();
-FPAPI int fp_get_empty_id(int id);
+FPAPI int fp_get_empty_id();
 FPAPI int fp_generate(int ram_buffer_id);
 FPAPI int fp_merge(int ram_buffer_id);
 FPAPI int fp_search(int *id);
