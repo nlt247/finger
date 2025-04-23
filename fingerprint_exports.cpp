@@ -70,12 +70,12 @@ int update_avail_id() {
 	return true;
 }
 
-int fp_get_empty_id(int id) {
+int fp_get_empty_id() {
     int empty_id;
 
-	if (m_comm->Run_GetEmptyID(id, id, &empty_id) != ERR_SUCCESS)
-		return false;
-	return true;
+	if (m_comm->Run_GetEmptyID(1, 500, &empty_id) != ERR_SUCCESS)
+		return -1;
+	return empty_id;
 }
 
 int fp_generate(int ram_buffer_id) {
@@ -87,6 +87,8 @@ int fp_merge(int ram_buffer_id) {
 }
 
 int fp_search(int *id) {
-    int result;
-	return (m_comm->Run_Search(0, 1, 500, id, &result) == ERR_SUCCESS);
+    int learnResult;
+    // 运行搜索函数，根据返回值判断是否搜索成功
+    int ret = m_comm.Run_Search(0, 1, 200, id, &learnResult);
+    return (ret == ERR_SUCCESS);
 }
