@@ -84,21 +84,21 @@ FINGERPRINT_API int fp_get_available_id();
 
 FINGERPRINT_API int test_add(int a, int b);
 
-FINGERPRINT_API int remove(int id);
+FINGERPRINT_API int fp_remove_template(int id);
 
-FINGERPRINT_API int store(int id);
+FINGERPRINT_API int fp_store(int id);
 
-FINGERPRINT_API int generate(int step);
+FINGERPRINT_API int fp_generate(int step);
 
-FINGERPRINT_API void update_avail_id();
+FINGERPRINT_API void fp_update_avail_id();
 
-FINGERPRINT_API int capture();
+FINGERPRINT_API int fp_capture();
 
-FINGERPRINT_API bool detect_finger();
+FINGERPRINT_API bool fp_detect_finger();
 
-FINGERPRINT_API bool search(int* id);
+FINGERPRINT_API bool fp_search(int* id);
 
-FINGERPRINT_API int merge(int step);
+FINGERPRINT_API int fp_merge(int step);
 
 #ifdef __cplusplus
 }
