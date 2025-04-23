@@ -1,3 +1,7 @@
+#include "fingerprint_exports.h"
+#include "communication.h"
+#include <memory>
+
 #if __cplusplus <= 201103L
 namespace std {
     template <typename T, typename... Args>
@@ -7,17 +11,14 @@ namespace std {
 }
 #endif
 
-#include "fingerprint_exports.h"
-#include "communication.h"
-#include <memory>
-
 // 全局通信对象
 std::unique_ptr<CCommunication> m_comm;
 
 // 初始化和连接管理
 int fp_init_connection(char* dev_name) {
-    if (!m_comm)
+    if (!m_comm){
         m_comm = std::make_unique<CCommunication>(dev_name);
+    }
 
 	if (m_comm->Run_InitConnection() != CONNECTION_SUCCESS)
 		return false;
