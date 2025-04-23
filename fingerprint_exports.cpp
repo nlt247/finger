@@ -3,81 +3,77 @@
 #include <memory>
 
 // 全局通信对象
-static std::unique_ptr<CCommunication> g_pCommunication = nullptr;
+CCommunication m_comm;
 
 // 初始化和连接管理
-int fp_init_connection(const char* devname) {
-    if (g_pCommunication) {
-        g_pCommunication->CloseConnection();
-        g_pCommunication.reset();
-    }
-    
-    // 在C++11中使用new和reset代替make_unique
-    g_pCommunication.reset(new CCommunication(devname));
-    return g_pCommunication->Run_InitConnection();
+int fp_init_connection() {
+	if (m_comm.Run_InitConnection() != CONNECTION_SUCCESS)
+		return false;
+	return true;
 }
 
 void fp_close_connection() {
-    if (g_pCommunication) {
-        g_pCommunication->CloseConnection();
-        g_pCommunication.reset();
-    }
+    m_comm.CloseConnection();
 }
 
 // 指纹操作
 int fp_get_image() {
-    if (!g_pCommunication) {
-        return ERR_CONNECTION;
-    }
-    return g_pCommunication->Run_GetImage();
+    return m_comm.Run_GetImage();
 }
 
-int fp_finger_detect(int* detect_result) {
-    if (!g_pCommunication) {
-        return ERR_CONNECTION;
-    }
-    return g_pCommunication->Run_FingerDetect(detect_result);
+int fp_finger_detect() {
+    int ret_code;
+
+	if (m_comm.Run_FingerDetect(&ret_code) != ERR_SUCCESS)
+		return false;
+
+	return ret_code;
 }
 
-int fp_store_char(int tmpl_no, int ram_buffer_id, int* dup_tmpl_no) {
-    if (!g_pCommunication) {
-        return ERR_CONNECTION;
-    }
-    return g_pCommunication->Run_StoreChar(tmpl_no, ram_buffer_id, dup_tmpl_no);
+int fp_store_char(int id) {
+    int dup_id, ret_code;
+
+	fp_del_char(id);
+	ret_code = m_comm.Run_StoreChar(id, 0, &dup_id);
+	update_avail_id();
+
+	return ret_code;
 }
 
-int fp_del_char(int start_tmpl_no, int end_tmpl_no) {
-    if (!g_pCommunication) {
-        return ERR_CONNECTION;
-    }
-    return g_pCommunication->Run_DelChar(start_tmpl_no, end_tmpl_no);
+int fp_del_char(int id) {
+    int ret_code;
+
+	ret_code = m_comm.Run_DelChar(id, id);
+	update_avail_id();
+
+	return ret_code;
 }
 
-int fp_get_empty_id(int start_tmpl_no, int end_tmpl_no, int* empty_id) {
-    if (!g_pCommunication) {
-        return ERR_CONNECTION;
-    }
-    return g_pCommunication->Run_GetEmptyID(start_tmpl_no, end_tmpl_no, empty_id);
+int update_avail_id() {
+    int empty_id;
+
+	if (m_comm.Run_GetEmptyID(1, 500, &empty_id) != ERR_SUCCESS)
+		return false;
+	return true;
+}
+
+int fp_get_empty_id(int id) {
+    int empty_id;
+
+	if (m_comm.Run_GetEmptyID(id, id, &empty_id) != ERR_SUCCESS)
+		return false;
+	return true;
 }
 
 int fp_generate(int ram_buffer_id) {
-    if (!g_pCommunication) {
-        return ERR_CONNECTION;
-    }
-    return g_pCommunication->Run_Generate(ram_buffer_id);
+    return m_comm.Run_Generate(ram_buffer_id);
 }
 
-int fp_merge(int ram_buffer_id, int merge_count) {
-    if (!g_pCommunication) {
-        return ERR_CONNECTION;
-    }
-    return g_pCommunication->Run_Merge(ram_buffer_id, merge_count);
+int fp_merge(int ram_buffer_id) {
+    return m_comm.Run_Merge(0, ram_buffer_id);
 }
 
-int fp_search(int ram_buffer_id, int start_id, int search_count, 
-             int* tmpl_no, int* learn_result) {
-    if (!g_pCommunication) {
-        return ERR_CONNECTION;
-    }
-    return g_pCommunication->Run_Search(ram_buffer_id, start_id, search_count, tmpl_no, learn_result);
+int fp_search(int *id) {
+    int result;
+	return (m_comm.Run_Search(0, 1, 500, id, &result) == ERR_SUCCESS);
 }
