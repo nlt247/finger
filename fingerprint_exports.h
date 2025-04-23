@@ -1,40 +1,28 @@
-#ifndef __FP_EXPORTS_H__
-#define __FP_EXPORTS_H__
+#ifndef FINGERPRINT_EXPORTS_H
+#define FINGERPRINT_EXPORTS_H
 
-#include <string>
+#include "fingerprint_api.h"
+#include "fingerprint.h"
+#include "communication.h"
 
-#ifdef __cplusplus
+// 声明所有您想导出的函数
 extern "C" {
-#endif
-
-#ifdef _WIN32
-  #ifdef BUILDING_DLL
-    #define FPAPI __declspec(dllexport)
-  #else
-    #define FPAPI __declspec(dllimport)
-  #endif
-#else
-  #define FPAPI __attribute__((visibility("default")))
-#endif
-
-// 初始化和连接管理
-FPAPI int fp_init_connection(const std::string& dev_name);
-FPAPI int fp_open_connection();
-FPAPI void fp_close_connection();
-
-// 指纹操作
-FPAPI int fp_get_image();
-FPAPI int fp_finger_detect();
-FPAPI int fp_store_char(int id);
-FPAPI int fp_del_char(int id);
-FPAPI int update_avail_id();
-FPAPI int fp_get_empty_id();
-FPAPI int fp_generate(int ram_buffer_id);
-FPAPI int fp_merge(int ram_buffer_id);
-FPAPI int fp_search(int *id);
-
-#ifdef __cplusplus
+    // FingerPrint_Worker类的导出工厂函数
+    FINGERPRINT_API FingerPrint_Worker* CreateFingerPrintWorker(const char* device_path);
+    FINGERPRINT_API void DestroyFingerPrintWorker(FingerPrint_Worker* worker);
+    
+    // FingerPrint_Worker类的方法包装
+    FINGERPRINT_API bool FP_Worker_Init(FingerPrint_Worker* worker);
+    FINGERPRINT_API void FP_Worker_Start(FingerPrint_Worker* worker);
+    FINGERPRINT_API void FP_Worker_Stop(FingerPrint_Worker* worker);
+    FINGERPRINT_API void FP_Worker_Detect_Start(FingerPrint_Worker* worker);
+    FINGERPRINT_API void FP_Worker_Detect_Stop(FingerPrint_Worker* worker);
+    FINGERPRINT_API void FP_Worker_Enroll_Start(FingerPrint_Worker* worker);
+    FINGERPRINT_API void FP_Worker_Save(FingerPrint_Worker* worker, int finger_id);
+    FINGERPRINT_API void FP_Worker_Delete(FingerPrint_Worker* worker, int finger_id);
+    FINGERPRINT_API bool FP_Worker_Online(FingerPrint_Worker* worker);
+    FINGERPRINT_API int FP_Worker_Avail_ID(FingerPrint_Worker* worker);
+    FINGERPRINT_API bool FP_Worker_New_Template_Avail(FingerPrint_Worker* worker);
 }
-#endif
 
-#endif // __FP_EXPORTS_H__
+#endif // FINGERPRINT_EXPORTS_H

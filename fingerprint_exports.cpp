@@ -1,91 +1,133 @@
 #include "fingerprint_exports.h"
-#include "communication.h"
-#include <memory>
+#include "fingerprint.h"
+#include <string>
 
-#if __cplusplus <= 201103L
-namespace std {
-    template <typename T, typename... Args>
-    std::unique_ptr<T> make_unique(Args&&... args) {
-        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+/**
+ * @brief 创建一个指纹识别工作器实例
+ * 
+ * @param device_path 指纹设备的路径
+ * @return FingerPrint_Worker* 指向新创建的指纹识别工作器实例的指针
+ */
+FingerPrint_Worker* CreateFingerPrintWorker(const char* device_path) {
+    return new FingerPrint_Worker(device_path);
+}
+
+/**
+ * @brief 销毁一个指纹识别工作器实例
+ * 
+ * @param worker 指向要销毁的指纹识别工作器实例的指针
+ */
+void DestroyFingerPrintWorker(FingerPrint_Worker* worker) {
+    if (worker) {
+        delete worker;
     }
 }
-#endif
 
-// 全局通信对象
-std::unique_ptr<CCommunication> m_comm;
-// 初始化和连接管理
-int fp_init_connection(const std::string& dev_name) {
-    if (!m_comm){
-        m_comm = std::make_unique<CCommunication>(dev_name);
-    }
-
-	if (m_comm->Run_InitConnection() != CONNECTION_SUCCESS)
-		return false;
-	return true;
+/**
+ * @brief 初始化指纹识别工作器
+ * 
+ * @param worker 指向指纹识别工作器实例的指针
+ * @return bool 初始化成功返回 true，失败返回 false
+ */
+bool FP_Worker_Init(FingerPrint_Worker* worker) {
+    if (!worker) return false;
+    return worker->init();
 }
 
-void fp_close_connection() {
-    m_comm->CloseConnection();
+/**
+ * @brief 启动指纹识别工作器
+ * 
+ * @param worker 指向指纹识别工作器实例的指针
+ */
+void FP_Worker_Start(FingerPrint_Worker* worker) {
+    if (worker) worker->start();
 }
 
-// 指纹操作
-int fp_get_image() {
-    return m_comm->Run_GetImage();
+/**
+ * @brief 停止指纹识别工作器
+ * 
+ * @param worker 指向指纹识别工作器实例的指针
+ */
+void FP_Worker_Stop(FingerPrint_Worker* worker) {
+    if (worker) worker->stop();
 }
 
-int fp_finger_detect() {
-    int result;
-    // 运行手指检测函数，根据返回值判断手指是否存在
-    int ret = m_comm->Run_FingerDetect(&result);
-    return (ret == ERR_SUCCESS && result == 1);
+/**
+ * @brief 启动指纹检测
+ * 
+ * @param worker 指向指纹识别工作器实例的指针
+ */
+void FP_Worker_Detect_Start(FingerPrint_Worker* worker) {
+    if (worker) worker->fp_detect_start();
 }
 
-int fp_store_char(int id) {
-    int dup_id, ret_code;
-
-	fp_del_char(id);
-	ret_code = m_comm->Run_StoreChar(id, 0, &dup_id);
-	update_avail_id();
-
-	return ret_code;
+/**
+ * @brief 停止指纹检测
+ * 
+ * @param worker 指向指纹识别工作器实例的指针
+ */
+void FP_Worker_Detect_Stop(FingerPrint_Worker* worker) {
+    if (worker) worker->fp_detect_stop();
 }
 
-int fp_del_char(int id) {
-    int ret_code;
-
-	ret_code = m_comm->Run_DelChar(id, id);
-	update_avail_id();
-
-	return ret_code;
+/**
+ * @brief 启动指纹录入
+ * 
+ * @param worker 指向指纹识别工作器实例的指针
+ */
+void FP_Worker_Enroll_Start(FingerPrint_Worker* worker) {
+    if (worker) worker->fp_enroll_start();
 }
 
-int update_avail_id() {
-    int empty_id;
-
-	if (m_comm->Run_GetEmptyID(1, 500, &empty_id) != ERR_SUCCESS)
-		return false;
-	return true;
+/**
+ * @brief 保存指纹模板
+ * 
+ * @param worker 指向指纹识别工作器实例的指针
+ * @param finger_id 要保存的指纹的 ID
+ */
+void FP_Worker_Save(FingerPrint_Worker* worker, int finger_id) {
+    if (worker) worker->fp_save(finger_id);
 }
 
-int fp_get_empty_id() {
-    int empty_id;
-
-	if (m_comm->Run_GetEmptyID(1, 500, &empty_id) != ERR_SUCCESS)
-		return -1;
-	return empty_id;
+/**
+ * @brief 删除指定 ID 的指纹模板
+ * 
+ * @param worker 指向指纹识别工作器实例的指针
+ * @param finger_id 要删除的指纹的 ID
+ */
+void FP_Worker_Delete(FingerPrint_Worker* worker, int finger_id) {
+    if (worker) worker->fp_delete(finger_id);
 }
 
-int fp_generate(int ram_buffer_id) {
-    return m_comm->Run_Generate(ram_buffer_id);
+/**
+ * @brief 检查指纹识别工作器是否在线
+ * 
+ * @param worker 指向指纹识别工作器实例的指针
+ * @return bool 在线返回 true，离线返回 false
+ */
+bool FP_Worker_Online(FingerPrint_Worker* worker) {
+    if (!worker) return false;
+    return worker->online();
 }
 
-int fp_merge(int ram_buffer_id) {
-    return m_comm->Run_Merge(0, ram_buffer_id);
+/**
+ * @brief 获取可用的指纹 ID
+ * 
+ * @param worker 指向指纹识别工作器实例的指针
+ * @return int 可用的指纹 ID，如果没有可用 ID 或工作器指针为空则返回 -1
+ */
+int FP_Worker_Avail_ID(FingerPrint_Worker* worker) {
+    if (!worker) return -1;
+    return worker->avail_id();
 }
 
-int fp_search(int *id) {
-    int learnResult;
-    // 运行搜索函数，根据返回值判断是否搜索成功
-    int ret = m_comm->Run_Search(0, 1, 200, id, &learnResult);
-    return (ret == ERR_SUCCESS);
+/**
+ * @brief 检查是否有新的指纹模板可用
+ * 
+ * @param worker 指向指纹识别工作器实例的指针
+ * @return bool 有新模板可用返回 true，否则返回 false
+ */
+bool FP_Worker_New_Template_Avail(FingerPrint_Worker* worker) {
+    if (!worker) return false;
+    return worker->new_template_avail();
 }

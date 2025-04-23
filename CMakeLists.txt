@@ -13,34 +13,34 @@ add_definitions(-DBUILDING_DLL)
 if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fvisibility=hidden")
 endif()
 
-# 源代码文件 - 包含必要的加密相关文件
+# 源代码文件
 set(SOURCES
     fingerprint_api.cpp
-    fingerprint_exports.cpp
+    fingerprint.cpp
     communication.cpp
     command.cpp
     device.cpp
-    usbcommand.cpp
     crypt/crypt_user.cpp
     crypt/base64.cpp
     crypt/md5.cpp
     crypt/rsa.cpp
     crypt/tea/xtea.cpp
     crypt/utils/bigint.cpp
+    usbcommand.cpp
 )
 
 # 头文件
 set(HEADERS
     fingerprint_api.h
-    fingerprint_exports.h
+    thread.h
+    fingerprint.h
     communication.h
     command.h
     define.h
     device.h
-    usbcommand.h
     crypt/crypt_user.h
     crypt/base64.h
     crypt/md5.h
@@ -50,17 +50,12 @@ set(HEADERS
     crypt/utils/types.h
     crypt/utils/utility.h
     crypt/utils/random.h
+    usbcommand.h
+    spti.h
 )
 
 # 创建动态链接库
 add_library(fingerprint SHARED ${SOURCES} ${HEADERS})
-
-# 设置库的输出名称
-set_target_properties(fingerprint PROPERTIES
-    OUTPUT_NAME "fingerprintlib"
-    VERSION ${PROJECT_VERSION}
-    SOVERSION ${PROJECT_VERSION_MAJOR}
-)
 
 # 设置包含目录
 target_include_directories(fingerprint PUBLIC 
@@ -84,7 +79,7 @@ install(TARGETS fingerprint
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION bin
 )
-install(FILES fingerprint_api.h fingerprint_exports.h DESTINATION include)
+install(FILES fingerprint_api.h DESTINATION include)
 
 # 添加测试程序
 add_executable(test_fingerprint test_fingerprint.cpp)
