@@ -274,12 +274,13 @@ FINGERPRINT_API int test_add(int a, int b) {
  * @param id 用于存储匹配到的指纹 ID
  * @return 搜索成功返回 true，失败返回 false
  */
- FINGERPRINT_API bool fp_search(int* id)
- {
-     if (!worker || !worker->online()) return false; // 修正返回类型
- 
-     return worker->search(id);
- }
+ FINGERPRINT_API int fp_search_get_id() {
+    if (!worker || !worker->online()) return -1;
+    
+    int id = -1;
+    bool success = worker->search(&id);
+    return success ? id : -1;
+}
  
  /**
  * @brief 合并指纹模板
