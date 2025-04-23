@@ -80,7 +80,3 @@ install(TARGETS fingerprint
     RUNTIME DESTINATION bin
 )
 install(FILES fingerprint_api.h DESTINATION include)
-
-# 添加测试程序
-add_executable(test_fingerprint test_fingerprint.cpp)
-target_link_libraries(test_fingerprint fingerprint)
