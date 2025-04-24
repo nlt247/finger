@@ -389,6 +389,14 @@ bool FingerPrint_Worker::detect_finger()
     return (ret == ERR_SUCCESS && result == 1);
 }
 
+int FingerPrint_Worker::get_detect_finger()
+{
+    int result;
+    // 运行手指检测函数，根据返回值判断手指是否存在
+    int ret = m_comm.Run_FingerDetect(&result);
+    return result;
+}
+
 /**
  * @brief 搜索匹配的指纹 ID
  * @param id 用于存储匹配到的指纹 ID

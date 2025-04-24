@@ -52,6 +52,7 @@ public:
     bool search(int *id);
     bool duplicated();
     bool detect_finger();
+    int get_detect_finger();
     bool id_avail(int id);
     int store(int id);
     int remove(int id);

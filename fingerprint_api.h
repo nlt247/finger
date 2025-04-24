@@ -96,6 +96,8 @@ FINGERPRINT_API int fp_capture();
 
 FINGERPRINT_API bool fp_detect_finger();
 
+FINGERPRINT_API int fp_get_detect_finger() 
+
 FINGERPRINT_API int fp_search_get_id();
 
 FINGERPRINT_API int fp_merge(int step);

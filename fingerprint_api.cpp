@@ -266,6 +266,11 @@ FINGERPRINT_API int test_add(int a, int b) {
  {
      return worker->detect_finger();
  }
+
+FINGERPRINT_API int fp_get_detect_finger() 
+{
+    return worker->get_detect_finger();
+}
  
  /**
  * @brief 搜索匹配的指纹 ID
